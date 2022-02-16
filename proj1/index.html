@@ -37,12 +37,12 @@
         <h2 align="middle">Overview</h2>
         <p>
             In this project, we implemented a rasterizer for triangles that reads in svg files and renders it into an adjustable GUI, as well as various functionalities and  sampling techniques to improve the resulting render quality of the images.
-        </p>    
+        </p>
 
         <p>
             The implementation of supersampling, barycentric coordinate interpolation, texture mapping, and transform functions for the rasterizer were integral to this project. For the rasterizer, we started with a simple sampling per pixel to draw the single-color triangles. Supersampling conducts antialiasing which removes jaggies and artifacts from the sharp edges of the triangles. Barycentric coordinate interpolation is important to enable gradient coloring and also helps with pixel and level sampling for texture mapping. Mipmaps and various forms of sampling techniques were used to efficiently draw triangles with colors defined by texture mapping. Some simple functions to support translation, scale, and rotation transforms as well as color gradients were created as well.
         </p>
-    
+
         <p>
             For the most part, to implement the rasterization and many of these functionalities, it was fairly straightforward - it was simply just translating the mathematical knowledge we learned from the lectures into C++ code. However some portions of the project were challenging and did require more creativity and reasoning such as how to determine if a point is in a triangle regardless of the winding order of the vertices, and how to store supersampled data.
         </p>
@@ -152,10 +152,23 @@
 
         <p>Barycentric coordinates provide us a way to interpolate across the three vertices of a triangle. This is useful as these three points of the triangle can represent colors, textures, or other types of data. For example, in the image below the triangle is defined with each vertex being a given color and Barycentric coordinates allows us to fill in each point of the triangle with a weighted sum of how far the point is from each vertex. We can see in the zoomed in portion of the image that the midpoint between the red and blue vertices is purple, as we would expect from mixing the two colors.</p>
 
-        <p class="aligncenter">
-            <img src="images/triangle_interpolate.png" align="middle" width="800px" />
-            <figcaption align="middle">Interpolated color triangle.</figcaption>
-        </p>
+     
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/triangle_interpolate.png" align="middle" width="500px" />
+                        <figcaption align="middle">Interpolated color triangle.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task4_wheel.png" align="middle" width="500px" />
+                        <figcaption align="middle">Interpolated color wheel.</figcaption>
+                    </td>
+                </tr>
+                <br />
+               
+            </table>
+        </div>
         <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
 
         <p>
@@ -186,7 +199,7 @@
                     </td>
                     <td>
                         <img src="images/task5-bilinear16.png" align="middle" width="500px" />
-                        <figcaption align="middle">Bilinear sampling, 1 sample per pixel.</figcaption>
+                        <figcaption align="middle">Bilinear sampling, 16 sample per pixel.</figcaption>
                     </td>
                 </tr>
             </table>
@@ -203,7 +216,7 @@
         <p>At this point we have options. If we want to do nearest texture sampling, we round the value found in the previous step and the resulting number gives us the level of the mipmap to sample from for that point. Alternatively we can do bilinear filtering and sample from the closest two levels, weighting each texture by how close they are to the raw value we calculated.</p>
 
         <p>We now have the following in our toolbox: pixel sampling, level sampling, and supersampling. Each of these has its associated speed, memory usage, and antialiasing tradeoffs. Pixel sampling results in speed reduction as we need to define the Barycentric coordinates and then perform three linear interpolations if we do bilinear sampling. Level sampling has a performance impact in the need to find the texture coordinates of neighboring pixels and then calculate the associated level followed by an interpolation if doing bilinear. Level sampling also requires additional memory in the need to store the additional mipmap textures, though this is only a one third increase. Both of the aforementioned techniques are effective at mapping textures onto the scene and doing so while reducing aliasing. They may not necessarily produce as “sharp” of a technique as supersampling. However, supersampling has massive performance implications, requiring a multiple of processing compared with the baseline. For example, for 16 times supersampling we are doing 16 times as much work as for each pixel we were sampling, we now sample 16 times as many.</p>
-        `
+
         <p>A combination of using these methods can be seen below in the images of New York City. In the top right corner of each image we zoom into the windows of a building to observe the effects of sampling at different levels and using nearest or linear methods.</p>
 
         <div align="middle">
@@ -232,7 +245,7 @@
             </table>
         </div>
 
-        
+
 
 
 
