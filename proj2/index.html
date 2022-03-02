@@ -1,7 +1,198 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184 Mesh Editor</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+  <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+  <h1 align="middle">Project 2: Mesh Editor</h1>
+  <h2 align="middle">Daniel He & Anthony Villegas, CS184</h2>
+
+  <br><br>
+
+      <div>
+
+          <h2 align="middle">Overview</h2>
+          <p>
+              Give a high-level overview of what you implemented in this project. Think about what you've built as a whole.
+              Share your thoughts on what interesting things you've learned from completing the project.
+          </p>
+
+          <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
+
+          <h3 align="middle">Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
+
+          <p style="text-align:center">
+              <img src="images/task1_differentcurve.png" align="middle" width="800px" />
+              <figcaption align="middle">A Bezier Curve.</figcaption>
+          </p>
+
+          <p>
+              In this part of the project we implemented de Casteljau’s algorithm to evaluate Bezier curves.
+          </p>
+
+          <p>De Casteljau’s algorithm works as follows. We are given ‘n’ control points as input which define the Bezier curve - for example points A, B, and C. We then perform a linear interpolation between succesive points to get n-1 new points. So for example we would get two points using the following equations.</p>
+
+          <p style="text-align:center">AB’ = (1 - t)*A + t * B</p>
+          <p style="text-align:center">BC’ = (1 - t)*B + t * C</p>
+
+          <p>Side note: the ‘t’ above represents our interpolation parameter which varies between [0, 1]. Performing de Caseljau’s at a given ‘t’ will give us one point on the Bezier curve. By evaluating many ‘t’ we can find all the necessary points on the curve.</p>
+
+          <p>Now that we have n-1 points, we again perform de Casteljau’s on these points. We would repeat this process until we are left with one point. This one point lies on the Bezier curve. Returning to the above example, the linear interpolation between AB’ and BC’ with parameter t would give us the point on the Bezier curve for ‘t’.</p>
+
+          <p>
+              Implementation of this is quite straightforward. We have a single function which takes as input an array (vector) of points. We iterate through this array and interpolate between the ‘i-th’ and ‘i+1th’ points using the ‘t’ parameter. We return an array of new sub points which can recursively be evaluated until left with one point which gives us the point on our Bezier curve.
+          </p>
+
+          <p>Below we can see de Casteljau’s algorithm performed to evaluate a Bezier curve defined by 6 control points. The additional blue points found on each level represent those found by the interpolation described above. As expected, we continue until we have one final point which is highlighted in red. The curve evaluated over all t is shown in green.</p>
+          <p>
+              Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
+              column in that row. You might find this useful for framing and showing your result images in an organized fashion.
+          </p>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/task1_level0.png" align="middle" width="400px" />
+                          <figcaption align="middle">Original control points.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/task1_level1.png" align="middle" width="400px" />
+                          <figcaption align="middle">de Casteljau level 1.</figcaption>
+                      </td>
+                  </tr>
+                  <br />
+                  <tr>
+                      <td>
+                          <img src="images/task1_level2.png" align="middle" width="400px" />
+                          <figcaption align="middle">de Casteljau level 2.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/task1_level3.png" align="middle" width="400px" />
+                          <figcaption align="middle">de Casteljau level 3.</figcaption>
+                      </td>
+                  </tr>
+                  <br />
+                  <tr>
+                      <td>
+                          <img src="images/task1_level4.png" align="middle" width="400px" />
+                          <figcaption align="middle">de Casteljau level 4.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/task1_level5.png" align="middle" width="400px" />
+                          <figcaption align="middle">de Casteljau level 5.</figcaption>
+                      </td>
+                  </tr>
+                  <br />
+                  <tr>
+                      <td>
+                          <img src="images/task1_finalcurvepoint.png" align="middle" width="400px" />
+                          <figcaption align="middle">Evaluated curve.</figcaption>
+                      </td>
+
+                  </tr>
+              </table>
+          </div>
+
+
+          <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
+
+
+          <p>In this part of the project we implement Bezier surfaces, an extension of Bezier curves.</p>
+
+          <p>When dealing with Bezier surfaces, we are given n x n control points which define our surface. To evaluate these points we use two interpolation parameters. We treat the n x n points as a sort of matrix and evaluate individually along each row using  one of our parameters and the same 1D de Casteljau’s method described in the previous section. We then evaluate along the other axis by taking the previously evaluated points from each row and performing de Casteljau’s using the other scalar interpolation parameter. The result is a point on our surface. By evaluating the curve along different values for our parameters we can get the necessary points on our surface.</p>
+
+          <p style="text-align:center">
+              <img src="images/task2_teapot.png" align="middle" width="800px" />
+              <figcaption align="middle">Teapot - Evaluated Bezier Surface.</figcaption>
+          </p>
+
+          <p>As for our implementation, evaluation of the Bezier surfaces is done within an ‘evaluate’ function which takes in two scalar interpolation parameters as inputs (u and v). We iterate along the rows of a vector of vectors called controlPoints, which is analogous to the n x n matrix of control points described above. We pass in each of these rows into a 1D evaluation function using parameter ‘u’ which continuously performs de Casteljau’s algorithm until finding the final point on the curve, which it returns. These points are stored in a separate vector in the curve evaluation function. Once done iterating over the rows, we take the vector of evaluated points and again pass into the 1D evaluation function now using the ‘v’ parameter. We return the output of this final evaluation.</p>
+
+
+
+          <h2 align="middle">Section II: Sampling</h2>
+
+          <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
+
+
+          <h3 align="middle">Part 4: Half-edge flip</h3>
+
+
+          <h3 align="middle">Part 5: Half-edge split</h3>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/task5_beforesplit.png" align="middle" width="500px" />
+                          <figcaption align="middle">Mesh before edge splits.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/task5_aftersplit.png" align="middle" width="500px" />
+                          <figcaption align="middle">Mesh after edge splits.</figcaption>
+                      </td>
+                  </tr>
+
+              </table>
+          </div>
+          <p>This portion of the project implements edge split, where given two triangles with a shared edge we insert a vertex at the midpoint of this edge and add an additional edge to each opposing vertex of the triangle.</p>
+
+          <p>The edge split operation is similar to a flip in that it requires many pointer reassignments with the additional complexity of needing to create new elements - 6 half edges, 3 edges, 2 faces, and 1 vertex. Assignments are made as expected from the attached diagram.</p>
+
+          <p>
+              The debugging journey was interesting. There was an initial issue where some faces were disappearing which turned out to be a typo when setting the neighboring face of one of the half edges. There was also a problem where the added vertex for every triangle would be located at (0,0,0). This was verified by commenting out any calculation of a centroid and verifying that the correct edges were created. This turned out to be a casting issue where floats were not being used and thus small values in the center calculation were rounded down to 0.
+          </p>
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/task5_beforesplitflip.png" align="middle" width="500px" />
+                          <figcaption align="middle">Mesh before edge splits and flips.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/task5_aftersplitflips.png" align="middle" width="500px" />
+                          <figcaption align="middle">Mesh after edge splits and flips.</figcaption>
+                      </td>
+                  </tr>
+
+              </table>
+          </div>
+
+          <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
+
+
+
+          <h2 align="middle">Section III: Optional Extra Credit</h2>
+          <p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
+
+          <h3 align="middle">Part 7: Design your own mesh!</h3>
+
+      </div></body>
+
 </html>
