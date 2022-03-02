@@ -47,245 +47,335 @@
             <tr>
                 <td>
                     <img src="images/task5_beforesplitflip.png" align="middle" width="400px" />
-                    
+
                 </td>
                 <td>
                     <img src="images/task5_beforesplit.png" align="middle" width="400px" />
-                    
+
                 </td>
             </tr>
             <br />
             <tr>
-                
-                
             </tr>
             <br />
             <tr>
-               
-
             </tr>
         </table>
     </div>
     <br /><br />
 
-          <div>
+    <div>
 
-              <h2 align="middle">Overview</h2>
-              <p>
-                  Broadly speaking this project deals with the representation and manipulation of geometry in computer graphics.
-              </p>
+        <h2 align="middle">Overview</h2>
+        <p>
+            Broadly speaking this project deals with the representation and manipulation of geometry in computer graphics.
+        </p>
 
-              <p>One such representation which we implement is that of Bezier curves and surfaces, where we define our geometries by using a set of control points which are then evaluated by de Casteljau’s algorithm. The mathematics and implementation of this representation are quite simple, consisting of recursive interpolation among user defined points. However, it can be seen how it can be difficult to manually manipulate the control points in order to achieve the desired geometry.</p>
+        <p>One such representation which we implement is that of Bezier curves and surfaces, where we define our geometries by using a set of control points which are then evaluated by de Casteljau’s algorithm. The mathematics and implementation of this representation are quite simple, consisting of recursive interpolation among user defined points. However, it can be seen how it can be difficult to manually manipulate the control points in order to achieve the desired geometry.</p>
 
-              <p>Another representation implemented is that of triangle meshes. Triangles of course have nice properties but it may seem daunting at first how we may manipulate a complex mesh. Thankfully the half-edge data structure allows us to access and traverse all the vertices, edges, half edges, and faces in our mesh. This enables us to perform several fundamental operations on our mesh. One such operation we perform is edge flipping, where we take a shared edge between two triangles in our mesh and flip its vertices. Another operation is the edge split, where instead of flipping the original shared edge, we instead add an additional edge between the opposite vertices. Note that there is some more nuance to these operations but once implemented they work as expected. Combining these actions allows us to upsample our meshes, introducing greater detail into our geometries should it be needed for artistic or simulation purposes.</p>
+        <p>Another representation implemented is that of triangle meshes. Triangles of course have nice properties but it may seem daunting at first how we may manipulate a complex mesh. Thankfully the half-edge data structure allows us to access and traverse all the vertices, edges, half edges, and faces in our mesh. This enables us to perform several fundamental operations on our mesh. One such operation we perform is edge flipping, where we take a shared edge between two triangles in our mesh and flip its vertices. Another operation is the edge split, where instead of flipping the original shared edge, we instead add an additional edge between the opposite vertices. Note that there is some more nuance to these operations but once implemented they work as expected. Combining these actions allows us to upsample our meshes, introducing greater detail into our geometries should it be needed for artistic or simulation purposes.</p>
 
-              <p>
-                  Overall, this project gave us a new perspective on geometry. In school we’ve been exposed to viewing geometry with direct representations but using something like control points to define a curve gives a new interpretation as to what geometry is and how we can utilize it. Even more mind blowing was the half edge data structure. There’s not really much to it, but the concept of representing geometry as a data structure that we can iterate over tied together two subjects in my mind in a way I didn’t expect.
-              </p>
+        <p>
+            Overall, this project gave us a new perspective on geometry. In school we’ve been exposed to viewing geometry with direct representations but using something like control points to define a curve gives a new interpretation as to what geometry is and how we can utilize it. Even more mind blowing was the half edge data structure. There’s not really much to it, but the concept of representing geometry as a data structure that we can iterate over tied together two subjects in my mind in a way I didn’t expect.
+        </p>
 
-              <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
+        <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
 
-              <h3 align="middle">Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
+        <h3 align="middle">Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
 
-              <p style="text-align:center">
-                  <img src="images/task1_differentcurve.png" align="middle" width="800px" />
-                  <figcaption align="middle">A Bezier Curve.</figcaption>
-              </p>
+        <p style="text-align:center">
+            <img src="images/task1_differentcurve.png" align="middle" width="800px" />
+            <figcaption align="middle">A Bezier Curve.</figcaption>
+        </p>
 
-              <p>
-                  In this part of the project we implemented de Casteljau’s algorithm to evaluate Bezier curves.
-              </p>
+        <p>
+            In this part of the project we implemented de Casteljau’s algorithm to evaluate Bezier curves.
+        </p>
 
-              <p>De Casteljau’s algorithm works as follows. We are given ‘n’ control points as input which define the Bezier curve - for example points A, B, and C. We then perform a linear interpolation between succesive points to get n-1 new points. So for example we would get two points using the following equations.</p>
+        <p>De Casteljau’s algorithm works as follows. We are given ‘n’ control points as input which define the Bezier curve - for example points A, B, and C. We then perform a linear interpolation between succesive points to get n-1 new points. So for example we would get two points using the following equations.</p>
 
-              <p style="text-align:center">AB’ = (1 - t)*A + t * B</p>
-              <p style="text-align:center">BC’ = (1 - t)*B + t * C</p>
+        <p style="text-align:center">AB’ = (1 - t)*A + t * B</p>
+        <p style="text-align:center">BC’ = (1 - t)*B + t * C</p>
 
-              <p>Side note: the ‘t’ above represents our interpolation parameter which varies between [0, 1]. Performing de Caseljau’s at a given ‘t’ will give us one point on the Bezier curve. By evaluating many ‘t’ we can find all the necessary points on the curve.</p>
+        <p>Side note: the ‘t’ above represents our interpolation parameter which varies between [0, 1]. Performing de Caseljau’s at a given ‘t’ will give us one point on the Bezier curve. By evaluating many ‘t’ we can find all the necessary points on the curve.</p>
 
-              <p>Now that we have n-1 points, we again perform de Casteljau’s on these points. We would repeat this process until we are left with one point. This one point lies on the Bezier curve. Returning to the above example, the linear interpolation between AB’ and BC’ with parameter t would give us the point on the Bezier curve for ‘t’.</p>
+        <p>Now that we have n-1 points, we again perform de Casteljau’s on these points. We would repeat this process until we are left with one point. This one point lies on the Bezier curve. Returning to the above example, the linear interpolation between AB’ and BC’ with parameter t would give us the point on the Bezier curve for ‘t’.</p>
 
-              <p>
-                  Implementation of this is quite straightforward. We have a single function which takes as input an array (vector) of points. We iterate through this array and interpolate between the ‘i-th’ and ‘i+1th’ points using the ‘t’ parameter. We return an array of new sub points which can recursively be evaluated until left with one point which gives us the point on our Bezier curve.
-              </p>
+        <p>
+            Implementation of this is quite straightforward. We have a single function which takes as input an array (vector) of points. We iterate through this array and interpolate between the ‘i-th’ and ‘i+1th’ points using the ‘t’ parameter. We return an array of new sub points which can recursively be evaluated until left with one point which gives us the point on our Bezier curve.
+        </p>
 
-              <p>Below we can see de Casteljau’s algorithm performed to evaluate a Bezier curve defined by 6 control points. The additional blue points found on each level represent those found by the interpolation described above. As expected, we continue until we have one final point which is highlighted in red. The curve evaluated over all t is shown in green.</p>
-
-
-              <div align="middle">
-                  <table style="width=100%">
-                      <tr>
-                          <td>
-                              <img src="images/task1_level0.png" align="middle" width="400px" />
-                              <figcaption align="middle">Original control points.</figcaption>
-                          </td>
-                          <td>
-                              <img src="images/task1_level1.png" align="middle" width="400px" />
-                              <figcaption align="middle">de Casteljau level 1.</figcaption>
-                          </td>
-                      </tr>
-                      <br />
-                      <tr>
-                          <td>
-                              <img src="images/task1_level2.png" align="middle" width="400px" />
-                              <figcaption align="middle">de Casteljau level 2.</figcaption>
-                          </td>
-                          <td>
-                              <img src="images/task1_level3.png" align="middle" width="400px" />
-                              <figcaption align="middle">de Casteljau level 3.</figcaption>
-                          </td>
-                      </tr>
-                      <br />
-                      <tr>
-                          <td>
-                              <img src="images/task1_level4.png" align="middle" width="400px" />
-                              <figcaption align="middle">de Casteljau level 4.</figcaption>
-                          </td>
-                          <td>
-                              <img src="images/task1_level5.png" align="middle" width="400px" />
-                              <figcaption align="middle">de Casteljau level 5.</figcaption>
-                          </td>
-                      </tr>
-                      <br />
-                      <tr>
-                          <td>
-                              <img src="images/task1_finalcurvepoint.png" align="middle" width="400px" />
-                              <figcaption align="middle">Evaluated curve.</figcaption>
-                          </td>
-
-                      </tr>
-                  </table>
-              </div>
+        <p>Below we can see de Casteljau’s algorithm performed to evaluate a Bezier curve defined by 6 control points. The additional blue points found on each level represent those found by the interpolation described above. As expected, we continue until we have one final point which is highlighted in red. The curve evaluated over all t is shown in green.</p>
 
 
-              <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/task1_level0.png" align="middle" width="400px" />
+                        <figcaption align="middle">Original control points.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task1_level1.png" align="middle" width="400px" />
+                        <figcaption align="middle">de Casteljau level 1.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/task1_level2.png" align="middle" width="400px" />
+                        <figcaption align="middle">de Casteljau level 2.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task1_level3.png" align="middle" width="400px" />
+                        <figcaption align="middle">de Casteljau level 3.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/task1_level4.png" align="middle" width="400px" />
+                        <figcaption align="middle">de Casteljau level 4.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task1_level5.png" align="middle" width="400px" />
+                        <figcaption align="middle">de Casteljau level 5.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/task1_finalcurvepoint.png" align="middle" width="400px" />
+                        <figcaption align="middle">Evaluated curve.</figcaption>
+                    </td>
+
+                </tr>
+            </table>
+        </div>
 
 
-              <p>In this part of the project we implement Bezier surfaces, an extension of Bezier curves.</p>
-
-              <p>When dealing with Bezier surfaces, we are given n x n control points which define our surface. To evaluate these points we use two interpolation parameters. We treat the n x n points as a sort of matrix and evaluate individually along each row using  one of our parameters and the same 1D de Casteljau’s method described in the previous section. We then evaluate along the other axis by taking the previously evaluated points from each row and performing de Casteljau’s using the other scalar interpolation parameter. The result is a point on our surface. By evaluating the curve along different values for our parameters we can get the necessary points on our surface.</p>
-
-              <p style="text-align:center">
-                  <img src="images/task2_teapot.png" align="middle" width="800px" />
-                  <figcaption align="middle">Teapot - Evaluated Bezier Surface.</figcaption>
-              </p>
-
-              <p>As for our implementation, evaluation of the Bezier surfaces is done within an ‘evaluate’ function which takes in two scalar interpolation parameters as inputs (u and v). We iterate along the rows of a vector of vectors called controlPoints, which is analogous to the n x n matrix of control points described above. We pass in each of these rows into a 1D evaluation function using parameter ‘u’ which continuously performs de Casteljau’s algorithm until finding the final point on the curve, which it returns. These points are stored in a separate vector in the curve evaluation function. Once done iterating over the rows, we take the vector of evaluated points and again pass into the 1D evaluation function now using the ‘v’ parameter. We return the output of this final evaluation.</p>
+        <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
 
 
+        <p>In this part of the project we implement Bezier surfaces, an extension of Bezier curves.</p>
 
-              <h2 align="middle">Section II: Triangle Meshes and Half-Edge Data Structure</h2>
+        <p>When dealing with Bezier surfaces, we are given n x n control points which define our surface. To evaluate these points we use two interpolation parameters. We treat the n x n points as a sort of matrix and evaluate individually along each row using  one of our parameters and the same 1D de Casteljau’s method described in the previous section. We then evaluate along the other axis by taking the previously evaluated points from each row and performing de Casteljau’s using the other scalar interpolation parameter. The result is a point on our surface. By evaluating the curve along different values for our parameters we can get the necessary points on our surface.</p>
 
-              <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
+        <p style="text-align:center">
+            <img src="images/task2_teapot.png" align="middle" width="800px" />
+            <figcaption align="middle">Teapot - Evaluated Bezier Surface.</figcaption>
+        </p>
 
-              <p>In this part we implemented the area-weighted vertex normals given a vertex. The idea here is to average the magnitude and direction of a normal based on the areas of the neighboring triangles from a given vertex. Doing so, we then are able to use those vertex normals to smooth out the mesh using Phong shading.</p>
-
-              <p>More specifically for the implementation,we first created a Vector3D that would store the aggregated normals around the given vertex. Then, we iterated through the half-edges that are connected to the vertex using the halfedge data structure. Using halfedge’s twin(), next(), and vertex() we can get the given vertex’s neighbors. Using this, we can calculate the cross product of the two vectors pointing towards the given vertex’s neighbors. We then sum these cross products together, normalize, and finally return the normalized area-weighted unit vector.</p>
-
-              <div align="middle">
-                  <table style="width=100%">
-                      <tr>
-                          <td>
-                              <img src="images/task3_flatshading.png" align="middle" width="400px" />
-                              <figcaption align="middle">Flat Shading.</figcaption>
-                          </td>
-                          <td>
-                              <img src="images/task3_phognshading.png" align="middle" width="400px" />
-                              <figcaption align="middle">Phong Shading (using vertex normals).</figcaption>
-                          </td>
-                      </tr>
-                      <br />
+        <p>As for our implementation, evaluation of the Bezier surfaces is done within an ‘evaluate’ function which takes in two scalar interpolation parameters as inputs (u and v). We iterate along the rows of a vector of vectors called controlPoints, which is analogous to the n x n matrix of control points described above. We pass in each of these rows into a 1D evaluation function using parameter ‘u’ which continuously performs de Casteljau’s algorithm until finding the final point on the curve, which it returns. These points are stored in a separate vector in the curve evaluation function. Once done iterating over the rows, we take the vector of evaluated points and again pass into the 1D evaluation function now using the ‘v’ parameter. We return the output of this final evaluation.</p>
 
 
 
-                  </table>
-              </div>
+        <h2 align="middle">Section II: Triangle Meshes and Half-Edge Data Structure</h2>
 
-              <h3 align="middle">Part 4: Half-edge flip</h3>
-              <div align="middle">
-                  <table style="width=100%">
-                      <tr>
-                          <td>
-                              <img src="images/task4_noflip.png" align="middle" width="400px" />
-                              <figcaption align="middle">Teapot, no flips.</figcaption>
-                          </td>
-                          <td>
-                              <img src="images/task4_oneflip.png" align="middle" width="400px" />
-                              <figcaption align="middle">Teapot, one flip.</figcaption>
-                          </td>
-                      </tr>
-                      <br />
-                      <tr>
-                          <td>
-                              <img src="images/task4_manyflips.png" align="middle" width="400px" />
-                              <figcaption align="middle">Teapot, many flips.</figcaption>
-                          </td>
-                      </tr>
-                      <br />
-                  </table>
-              </div>
+        <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
 
-              <p>In this section, we implemented the edge-flip operation. We used the diagram laid out below, labeling each half-edge, edge, vertex, and face as it is shown. (Credit: http://15462.courses.cs.cmu.edu/fall2015content/misc/HalfedgeEdgeOpImplementationGuide.pdf) In our implementation, we first collected all the necessary pointers with respect to the given edge’s half-edges, vertices, and faces. Then to perform the edge flip, we reassigned everything according to the diagram below, to reflect the changes that the flip operation did to the mesh. The most challenging part of this section was knowing exactly where each half-edge was after a flip and made it especially challenging to code out with matching each label to the correct position.</p>
+        <p>In this part we implemented the area-weighted vertex normals given a vertex. The idea here is to average the magnitude and direction of a normal based on the areas of the neighboring triangles from a given vertex. Doing so, we then are able to use those vertex normals to smooth out the mesh using Phong shading.</p>
 
-              <p style="text-align:center">
-                  <img src="images/task4_flipdiagram.png" align="middle" width="400px" />
-                  <figcaption align="middle">Flip diagram.</figcaption>
-              </p>
-              <p>The debugging journey was definitely eventful. We first started out with trying to implement the edge flips without having a reference diagram. This led us to have to debug our code by placing multiple breakpoints in our debugger and drawing out the two triangles connected by an edge and labeling each half edge, vertex, and triangle face multiple times with various iterations on flips. This was obviously a terrible way to approach it at first and in hindsight we should have started drawing out a reference diagram first. Eventually we stumbled upon this resource linked above. This resource laid out the steps on how to implement the edge operations, but what was most helpful was the diagram of before flip and after flip (first image in this section). Following this, we were more easily able to visualize flips and implement them in the code.</p>
+        <p>More specifically for the implementation,we first created a Vector3D that would store the aggregated normals around the given vertex. Then, we iterated through the half-edges that are connected to the vertex using the halfedge data structure. Using halfedge’s twin(), next(), and vertex() we can get the given vertex’s neighbors. Using this, we can calculate the cross product of the two vectors pointing towards the given vertex’s neighbors. We then sum these cross products together, normalize, and finally return the normalized area-weighted unit vector.</p>
 
-              <h3 align="middle">Part 5: Half-edge split</h3>
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/task3_flatshading.png" align="middle" width="400px" />
+                        <figcaption align="middle">Flat Shading.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task3_phognshading.png" align="middle" width="400px" />
+                        <figcaption align="middle">Phong Shading (using vertex normals).</figcaption>
+                    </td>
+                </tr>
+                <br />
 
-              <div align="middle">
-                  <table style="width=100%">
-                      <tr>
-                          <td>
-                              <img src="images/task5_presplit.png" align="middle" width="500px" />
-                              <figcaption align="middle">Mesh before edge splits.</figcaption>
-                          </td>
-                          <td>
-                              <img src="images/task5_postsplit.png" align="middle" width="500px" />
-                              <figcaption align="middle">Mesh after edge splits.</figcaption>
-                          </td>
-                      </tr>
 
-                  </table>
-              </div>
-              <p>This portion of the project implements edge split, where given two triangles with a shared edge we insert a vertex at the midpoint of this edge and add an additional edge to each opposing vertex of the triangle.</p>
 
-              <p>The edge split operation is similar to a flip in that it requires many pointer reassignments with the additional complexity of needing to create new elements - 6 half edges, 3 edges, 2 faces, and 1 vertex. Assignments are made as expected from the attached diagram.</p>
+            </table>
+        </div>
 
-              <p style="text-align:center">
-                  <img src="images/edge_split.jpg" align="middle" width="800px" />
-                  <figcaption align="middle">Edge split pointers.</figcaption>
-              </p>
+        <h3 align="middle">Part 4: Half-edge flip</h3>
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/task4_noflip.png" align="middle" width="400px" />
+                        <figcaption align="middle">Teapot, no flips.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task4_oneflip.png" align="middle" width="400px" />
+                        <figcaption align="middle">Teapot, one flip.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/task4_manyflips.png" align="middle" width="400px" />
+                        <figcaption align="middle">Teapot, many flips.</figcaption>
+                    </td>
+                </tr>
+                <br />
+            </table>
+        </div>
 
-              <p>
-                  The debugging journey was interesting. There was an initial issue where some faces were disappearing which turned out to be a typo when setting the neighboring face of one of the half edges. There was also a problem where the added vertex for every triangle would be located at (0,0,0). This was verified by commenting out any calculation of a centroid and verifying that the correct edges were created. This turned out to be a casting issue where floats were not being used and thus small values in the center calculation were rounded down to 0.
-              </p>
-              <div align="middle">
-                  <table style="width=100%">
-                      <tr>
-                          <td>
-                              <img src="images/task5_nosplit.png" align="middle" width="500px" />
-                              <figcaption align="middle">Mesh before edge splits and flips.</figcaption>
-                          </td>
-                          <td>
-                              <img src="images/task5_splitflip.png" align="middle" width="500px" />
-                              <figcaption align="middle">Mesh after edge splits and flips.</figcaption>
-                          </td>
-                      </tr>
+        <p>In this section, we implemented the edge-flip operation. We used the diagram laid out below, labeling each half-edge, edge, vertex, and face as it is shown. (Credit: http://15462.courses.cs.cmu.edu/fall2015content/misc/HalfedgeEdgeOpImplementationGuide.pdf) In our implementation, we first collected all the necessary pointers with respect to the given edge’s half-edges, vertices, and faces. Then to perform the edge flip, we reassigned everything according to the diagram below, to reflect the changes that the flip operation did to the mesh. The most challenging part of this section was knowing exactly where each half-edge was after a flip and made it especially challenging to code out with matching each label to the correct position.</p>
 
-                  </table>
-              </div>
+        <p style="text-align:center">
+            <img src="images/task4_flipdiagram.png" align="middle" width="400px" />
+            <figcaption align="middle">Flip diagram.</figcaption>
+        </p>
+        <p>The debugging journey was definitely eventful. We first started out with trying to implement the edge flips without having a reference diagram. This led us to have to debug our code by placing multiple breakpoints in our debugger and drawing out the two triangles connected by an edge and labeling each half edge, vertex, and triangle face multiple times with various iterations on flips. This was obviously a terrible way to approach it at first and in hindsight we should have started drawing out a reference diagram first. Eventually we stumbled upon this resource linked above. This resource laid out the steps on how to implement the edge operations, but what was most helpful was the diagram of before flip and after flip (first image in this section). Following this, we were more easily able to visualize flips and implement them in the code.</p>
 
-              <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
+        <h3 align="middle">Part 5: Half-edge split</h3>
 
-              <h2 align="middle">Section III: Optional Extra Credit</h2>
-              <p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/task5_presplit.png" align="middle" width="500px" />
+                        <figcaption align="middle">Mesh before edge splits.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task5_postsplit.png" align="middle" width="500px" />
+                        <figcaption align="middle">Mesh after edge splits.</figcaption>
+                    </td>
+                </tr>
 
-              <h3 align="middle">Part 7: Design your own mesh!</h3>
+            </table>
+        </div>
+        <p>This portion of the project implements edge split, where given two triangles with a shared edge we insert a vertex at the midpoint of this edge and add an additional edge to each opposing vertex of the triangle.</p>
 
-          </div>
+        <p>The edge split operation is similar to a flip in that it requires many pointer reassignments with the additional complexity of needing to create new elements - 6 half edges, 3 edges, 2 faces, and 1 vertex. Assignments are made as expected from the attached diagram.</p>
+
+        <p style="text-align:center">
+            <img src="images/edge_split.jpg" align="middle" width="800px" />
+            <figcaption align="middle">Edge split pointers.</figcaption>
+        </p>
+
+        <p>
+            The debugging journey was interesting. There was an initial issue where some faces were disappearing which turned out to be a typo when setting the neighboring face of one of the half edges. There was also a problem where the added vertex for every triangle would be located at (0,0,0). This was verified by commenting out any calculation of a centroid and verifying that the correct edges were created. This turned out to be a casting issue where floats were not being used and thus small values in the center calculation were rounded down to 0.
+        </p>
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/task5_nosplit.png" align="middle" width="500px" />
+                        <figcaption align="middle">Mesh before edge splits and flips.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task5_splitflip.png" align="middle" width="500px" />
+                        <figcaption align="middle">Mesh after edge splits and flips.</figcaption>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+
+        <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
+
+        <p>
+            In part 6, we implemented the loop subdivision for mesh upsampling. At a high level, loop subdivision subdivides each of its triangles into four smaller triangles then updates the vertices of the subdivided mesh based on some weighting scheme to achieve upsampling. Implementation was fairly clear and straightforward after reading through HalfedgeMesh.h and following the framework steps as outlined in the skeleton code and project spec. To help with implementation, after each step we drew out a diagram to make sure everything was implemented smoothly and made sense in our heads.
+        </p>
+
+        <p>1) We first iterate over all the vertices, computing the new vertex positions for all vertices in the input mesh using the loop subdivision rule. We also assign their isNew as false. We then store the new vertex positions in the vertex’s newPosition, calculated by (1 - n * u) * currV->position + u * sum; where n is the vertex degree, u is  3/16 if n=3 and 3/(8n) otherwise, currV->position is the current vertex’s position, and sum is the sum of neighboring vertex positions. </p>
+
+        <p>2) Then iterate over all the edges, computing the updated vertex positions associated with edges, storing them in the edges’ newPosition. The position of a new vertex splitting the shared edge between two triangles is calculated by (3.0 / 8.0) * (pos0 + pos1) + (1.0 / 8.0) * (pos2 + pos3); where the pos0 and pos1 vertices are the shared edge. Here we also mark the edges isNew as false for the next step.</p>
+
+        <p>3) We then split every edge in the mesh. To do so we iterate through the mesh’s original edges, split them, and set the new vertices as new, and the position to the newPosition. Here we also set the halfedges as new if the edges did not exist pre-split.</p>
+
+        <p>4) We then flip any new edge that connects an old and new vertex, iterating through all the edges in the mesh. This makes sure the triangles are regularized into more equilateral shapes.</p>
+
+        <p>5) Finally we iterate over all the vertices to copy the new vertex positions into the final vertex’s positions.</p>
+
+        <p>With loop subdivision, interestingly the meshes get smoothed out and the shape gets rounded out. We can see this in the torus mesh and the icosahedron mesh files (images below). Upsampling the torus just once already rounds it out and turns it into a more rounded shape, and upsampling it five times turns it into a perfect donut. Likewise with the icosahedron, the mesh smooths out into a sphere. This effect can be reduced as we will see with the cube mesh.</p>
+
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/task6_torus.png" align="middle" width="400px" />
+                        <figcaption align="middle">Torus.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task6_torusup1.png" align="middle" width="400px" />
+                        <figcaption align="middle">Torus Upsampled Once.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/torus_up6.png" align="middle" width="400px" />
+                        <figcaption align="middle">Torus Upsampled 5 Times.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task6_icosahedron.png" align="middle" width="400px" />
+                        <figcaption align="middle">Icosahedron.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/task6_icosahedronup1.png" align="middle" width="400px" />
+                        <figcaption align="middle">Icosahedron Upsampled Once.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task6_icosahedronup5.png" align="middle" width="400px" />
+                        <figcaption align="middle">Icosahedron Upsampled 5 Times.</figcaption>
+                    </td>
+                </tr>
+                <br />
+            </table>
+        </div>
+    </div>
+ 
+
+    <p>
+        When the cube is upsampled, we can see 1) the sharp edges are not sharp anymore (as discussed in the previous paragraph) and 2) the cube becomes asymmetrical. The cube becomes asymmetrical because there is only one edge splitting the cube face, rather than two edges - and some vertices are higher degree than others. To combat both of these issues, we can split the edges to both (1) create less flexibility in the points and (2) equalize the degrees so that it becomes symmetrical upon upsampling.
+    </p>
+
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="images/task6_defaultcube.png" align="middle" width="400px" />
+                    <figcaption align="middle">Default Cube.</figcaption>
+                </td>
+                <td>
+                    <img src="images/task6_defaultcubeup1.png" align="middle" width="400px" />
+                    <figcaption align="middle">Default Cube Upsampled Once.</figcaption>
+                </td>
+            </tr>
+            <br />
+            <tr>
+                <td>
+                    <img src="images/task6_defaultcubeup5.png" align="middle" width="400px" />
+                    <figcaption align="middle">Default Cube Upsampled 5 Times.</figcaption>
+                </td>
+                <td>
+                    <img src="images/task6_preprocessedcube.png" align="middle" width="400px" />
+                    <figcaption align="middle">Preprocessed Cube.</figcaption>
+                </td>
+            </tr>
+            <br />
+            <tr>
+                <td>
+                    <img src="images/task6_preprocessedcubeup1.png" align="middle" width="400px" />
+                    <figcaption align="middle">Preprocessed Cube Upsampled Once.</figcaption>
+                </td>
+                <td>
+                    <img src="images/task6_preprocessedcubeup5.png" align="middle" width="400px" />
+                    <figcaption align="middle">Preprocessed Cube Upsampled 5 Times.</figcaption>
+                </td>
+            </tr>
+            <br />
+         
+        </table>
+    </div>
+    </div>
 </body>
 
 </html>
