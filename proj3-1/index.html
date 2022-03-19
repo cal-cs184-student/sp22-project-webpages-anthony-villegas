@@ -109,7 +109,7 @@
         
             <p>The result can be seen in the images above. We shoot rays out into the world. We test for intersection with all objects (something optimized in the next part of this project) checking for intersection and updating with the closest object of intersection. At this point only normal shading is used for intersection with triangles and spheres.</p>
 
-            <h3 align="middle">Part 2: </h3>
+          
 
 
 
@@ -217,6 +217,12 @@
 
             <h2 align="middle">Part III: Direct Illumination</h2>
 
+            <p>Up to now we have only used rays to check for intersection with objects but we can also start to leverage raytracing to enhance our lighting beginning with direct lighting. In direct lighting, once intersecting an object we send a ray out into the world. If we hit a light source then we know this point will be illuminated. </p>
+           
+            <p>
+                Direct lighting comes in two flavors: light sampling and hemisphere sampling. In hemisphere sampling the ray we send out is sent out uniformly in a hemisphere while for light sampling we only send out rays in directions where we know light sources are. However, the general process for both is similar. We send out a given number of rays, add up the light contribution, divide this sum by the number of rays, and normalize by the probability of sampling the given ray direction. This process is also referred to as Monte Carlo integration as the expectation of the finite sum we are taking is the integral of the light hitting the point - exactly what we are trying to estimate.
+            </p>
+
             <div align="middle">
                 <table style="width=100%">
                     <tr>
@@ -232,6 +238,8 @@
                     <br>
                 </table>
             </div>
+            
+            <p>We begin describing hemisphere sampling. We are given the point of intersection and the ray of intersection. We generate a random ray using a direction drawn from a hemisphere sampler and the point of intersection as the origin. The pdf for a ray sampled uniformly in a hemisphere is 1 / 2 pi, something we will normalize by later. We then check if this generated ray intersects anything in the world, using BVHAccel::intersect. If it does, we multiply the emission of the object hit by the corresponding BSDF value at our origin for the incoming and outgoing direction in object coordinates, multiply be a cosine Lambert term, then divide by the pdf. Note that if the hit object is not a light source then the emission is 0. We repeat this process for the desired number of samples then divide by the number of samples. </p>
 
             <div align="middle">
                 <table style="width=100%">
@@ -249,9 +257,11 @@
                 </table>
             </div>
 
+            <p>For lighting sampling we similarly start with our point of intersection and ray of intersection. However, now we iterate over all the lights and take the desired amount of samples per light. The ray direction is not taken in the hemisphere but is instead in the direction of the given light source. The sampler function which gives us this ray direction also gives us the pdf. At this point we send out a ‘shadow ray’. If we hit something which isn’t the light source then we know we’re in a shadow. Else, we’re getting light and add to our sum as we did in hemisphere sampling. We repeat this for the desired amount of samples over all lights then return the sum divided by the number of samples taken. One added optimization is that we only s</p>
 
-
-
+            <p>We can compare these two methods as seen in the images above and see that light sampling is much less noisy than hemisphere sampling in the overall image. This is intuitive, we are sampling the parts of the scene that are most important and have the greatest contribution to a given point on our image. If we concentrate on what’s important, we get better results. The expectation of our sums are both the actual integral so both methods will allow us to converge to the real solution but importance sampling allows us to get there sooner and avoids sampling in directions that give no contribution to our final image.</p>
+            
+            <p>We can also look at light sampling (below) independently with increasing numbers of light rays sent out. When only taking 1 light sample we can see the overall image and especially shadows are noisy and incorrect. However, as we increase our number of samples we see we get softer shadows coming from the spheres as we transition from dark black to light grays as we would expect. For this particular scene we can see this occurs as our spheres may block the light at certain angles but not others. By averaging over these different angles we either get a dark or light shadow.</p>
             <div align="middle">
                 <table style="width=100%">
                     <tr>
