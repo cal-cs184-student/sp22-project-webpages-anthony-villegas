@@ -316,11 +316,11 @@
                 </table>
             </div>
 
-            <p>
-                Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
-                column in that row. You might find this useful for framing and showing your result images in an organized fashion.
-            </p>
+            <p>In global illumination we look not just at the light coming directly from the light sources but also take into account light bouncing off other objects. We can recursively trace our rays and find incoming light to our heart’s (and computer’s) content.</p>
 
+            <p>
+                For our implementation the bulk of the work is done in PathTrace::at_least_one_bounce_radiance. This is a recursive function which relies on checking the inputted ray’s depth to terminate. Our raytracer has a user defined max_ray_depth which our initial ray’s depth parameter is set to. As we trace additional bounces this parameter is decremented. We have an additional termination criteria to ensure our Monte Carlo estimator remains unbiased (expectation is that of the integral we’re estimating). This termination criteria is referred to as Russian roulette, essentially a coin flip with (in our case) a 70% chance that we will continue to the next bounce. By additionally normalizing by this probability term we ensure our estimator is unbiased. But what actually happens on each bounce? Essentially the same logic as our direct lighting function. We first find the one_bounce_radiance at our initial point. We then generate a direction for our next bounce based on the BSDF at our starting point, check for intersection and if intersection occurs we recursively return the one bounce radiance plus at_least_one_bounce_radiance at the next intersection point multiplied by the reflectance of the BSDF multiplied by a cosine Lambertian term and divided by the pdf of the ray direction we generated and the continuation probability. We repeat this until reaching our max bounces or the coin flip terminates us. Note that if max_ray_depth is greater than 1, we always do at least one bounce irrespective of the coin flip.
+            </p>
             <div align="middle">
                 <table style="width=100%">
                     <tr>
@@ -336,12 +336,11 @@
                     <br>
                 </table>
             </div>
-
             <p>
-                Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
-                column in that row. You might find this useful for framing and showing your result images in an organized fashion.
+                The results as we can see in the provided images are beautiful We can also see what an image looks like with only direct lighting and only indirect lighting above. Mentally we can see if we add these two together we get the original globally illuminated image fairly intuitively.
             </p>
 
+            <p>Below, we see as we increase the ray depth we go from 0 bounce lighting, direct lighting, to global illumination. The images get increasingly more realistic, modeling how we would expect light to behave.</p>
             <div align="middle">
                 <table style="width=100%">
                     <tr>
@@ -373,11 +372,7 @@
                         <figcaption align="middle">1024 samples per pixel, 4 light rays, ray depth 100</figcaption>
                 </tr>
             </div>
-
-            <p>
-                Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
-                column in that row. You might find this useful for framing and showing your result images in an organized fashion.
-            </p>
+            <p>Below for the dragon with 4 light rays at depth 4, we see increasing the sampling rate decreases the noise of our image. It can be imagined how in a more complex scene with more light rays and at a greater depth, it can take a high amount of samples to get to satisfactory reduction in noise as even at 32 samples the image is fairly noisy for a 480 by 360 pixel image.</p>
 
             <div align="middle">
                 <table style="width=100%">
@@ -444,8 +439,8 @@
             </div>
 
             
-
-
+            <h4>Collaboration</h4>
+            <p>We collaborated entirely online with both work on our own time, and Discord calls every other day for a few hours each call. We believe it went well, and working from setups we were comfortable with increased our productivity as well, though Anthony did have to go to Soda and use the hive machines several times to test and render some scenes. We learned that with the power of friendship and slip days you can do anything.</p>
 
 
 </body>
