@@ -1,7 +1,443 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-1 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184 Mesh Editor</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+    <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+    <h1 align="middle">Project 3-1: Raytracer</h1>
+    <h2 align="middle">Daniel He & Anthony Villegas</h2>
+
+
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="images/part4_walle_s1024_l4_m4.png" align="middle" width="400px" />
+                    
+                </td>
+                <td>
+                    <img src="images/part4_spheres_s1024_l4_m4.png" align="middle" width="400px" />
+                    
+                </td>
+            </tr>
+            <br>
+            <tr>
+                <td>
+                    <img src="images/part5_bunny_s4096_l50_m100.png" align="middle" width="400px" />
+                   
+                </td>
+                <td>
+                    <img src="images/part4_blob_s1024_l4_m4.png" align="middle" width="400px" />
+                    
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <br><br>
+
+        <div>
+
+            <h2 align="middle">Overview</h2>
+            <p>
+                In this project we learned how to render meshes with ray tracing, improving mesh render speed with Bounding Volume Hierarchy (BVH) and calculate lighting. This allowed us to generate realistic images with soft shadows, indirect lighting, and ambient occlusion at an extremely fast speed.
+            </p>
+
+            <p>
+                In part 1, we generate rays from a camera, and project them into world space allowing us to render the scene by checking for the intersections between the ray from the camera and the object primitives, using normal shading.
+            </p>
+
+            <p>
+                In part 2, we implemented the BVH which allowed us to greatly speed up the rendering process. The BVH allowed us to not have to check large portions of the scenes by precomputing the bounding box structure on the primitives, and only render if the ray intersects with the bounding box of a leaf node. This allowed us to render much more complex meshes like wall-e in seconds.
+            </p>
+            For part 3 and 4, we implemented direct illumination (hemisphere and importance sampling) and global illumination. Using the Monte-Carlo estimator, we were able to estimate direct lighting and global illumination. Doing so, we could render realistic scenes with direct and global lighting on diffuse objects.
+            <p>
+                In part 5, we implemented adaptive sampling which optimizes the samples taken per pixel - concentrating the samples in the more difficult parts of the image, by terminating if a pixel had already converged.
+            </p>
+            Definitely, the most complicated part of the project was the BVH as every time we thought we had the logic down for the implementation, when we moved onto another part of the project, something would be wrong when we rendered some images, and it always led back to a problem in the BVH. One example is when we were trying to render wall-e.dae for part 4, we got a segfault, and this was due to our BVH logic, where we needed to prevent infinite recursion by ensuring each left and right group had some elements. These issues were usually simple fixes, but it did take us a while to figure this out by using a debugger and stepping through the recursion.
+            <p>
+
+            </p>
+
+            <h2 align="middle">Part I: Ray Generation and Scene Intersection</h2>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/part1_gems.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br>
+                </table>
+            </div>
+
+            <p>In order to perform ray tracing we first need…rays! We begin in our image space where we want to find the value at a given coordinate. These coordinates are passed in as inputs to Camera::generate_ray(x, y). We then transform into camera space where the camera origin is at (0, 0, 0) and the center of the camera plane/sensor is defined to be at (0, 0, -1). By transforming the given input coordinates into camera space using the FOV properties of the camera, we find the corresponding point on the camera plane/sensor. By drawing a line from the origin to this point then transforming into world coordinates, we have a generated ray which we can now trace. We can repeat this process by randomly sampling different coordinates within pixels to generate additional rays, should we wish.</p>
+
+          
+            <p>This ray has an origin and direction in the world. We now wish to answer which object (if any) this ray first hits. Based on the geometry of the object we can answer this question in several ways. Let’s say we have a triangle and wish to know if a given ray intersects it. We know a triangle lies in a plane so we now ask if the ray intersects the plane. A plane can be defined by the difference of two points on the plane and the normal to the plane. By substituting the ray equation into the plane equation we can rearrange and solve for the time of intersection. If this time is positive we have a valid intersection of the plane and we can now find the point of intersection. Using this point we can test if we’re inside the triangle using Barycentric coordinates. The implementation utilized by us is an optimized version of this process known as the Moller Trumbore algorithm. We can solve directly for the Barycentric coordinates and time of intersection by taking a series of subtraction, cross products, and dot products. If the time is positive and the Barycentric coordinates are positive and sum to 1 then we have a valid intersection.</p>
+        
+            <p>The result can be seen in the images above. We shoot rays out into the world. We test for intersection with all objects (something optimized in the next part of this project) checking for intersection and updating with the closest object of intersection. At this point only normal shading is used for intersection with triangles and spheres.</p>
+
+            <h3 align="middle">Part 2: </h3>
+
+
+
+            <h2 align="middle">Part II: Bounding Volume Hierarchy</h2>
+            <p>
+                From part 1, we could render simple scenes, but more complex scenes containing many triangle meshes were extremely slow to render. This is because the simple implementation from part 1 checks every single ray against every object, regardless if the ray hits or not. To speed up the rendering time, we use a Bounding Volume Hierarchy (BVH) to partition the mesh primitives into the leaves of a binary tree, which allows us to speed up the computation needed for checking ray intersections.
+            </p>
+            <p>
+                For our BVH construction, every node stores a bounding box of all descendant primitives inside and references the children nodes; at the leaf nodes, it stores the list of primitives in the bounding box. We first create a bounding box on the root node by cycling through every primitive and expanding the bounding box for all primitives. Then, we check the base case if the node is a leaf based on if the size of primitives is less than or equal to max_leaf_size. If it is a leaf node, return that node, otherwise we perform the bounding box split. To do so, we first find the best axis to split on based on the size of the bounding box. Then, to calculate the split of the bounding box, our heuristic was to compute the average centroid of all the primitives - partitioning it on the largest axis we found earlier. If we find either side of the partition is empty, then we set our partition_point = start + (r_size + l_size) / 2; which would prevent infinite recursion on an empty list. Then we recurse on the left and right lists and finally return the node.
+
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/bvh1.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/bvh2.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br>
+                    <tr>
+                        <td>
+                            <img src="images/bvh3.png" align="middle" width="400px" />
+
+
+                        </td>
+                        <td>
+                            <img src="images/bvh4.png" align="middle" width="400px" />
+
+
+                        </td>
+                    </tr>
+
+                </table>
+                <figcaption align="middle">Visulization of BVH split.</figcaption>
+            </div>
+
+            <p>
+                For the BVH intersection algorithm, we implemented a recursive intersection algorithm based on this lecture slide: https://cs184.eecs.berkeley.edu/sp22/lecture/10-49/ray-tracing-acceleration. We first check if the ray intersects the bounding box of the inputted node, return false if it doesn’t. Then check if the node is a leaf. If it is a leaf, then we iterate through all the primitives and check the intersection, and return true if there is an intersection. Otherwise, we recurse on the left and right child of the node.
+            </p>
+
+            <div align="middle">
+
+
+                <tr>
+                    <td align="middle">
+                        <img src="images/blob-bvh.png" width="400px" />
+                        <figcaption align="middle">blob.dae, normal shading, using BVH acceleration rendered in .109 seconds</figcaption>
+                </tr>
+            </div>
+            <div align="middle">
+
+
+                <tr>
+                    <td align="middle">
+                        <img src="images/wall-e-bvh.png" width="400px" />
+                        <figcaption align="middle">wall-e.dae, normal shading, using BVH acceleration rendered in .134 seconds</figcaption>
+                </tr>
+            </div>
+            <p>
+                Daniel has a powerful cpu (Ryzen 5900x) so all the provided meshes could be rendered within a fairly reasonable amount of time without the bvh acceleration (compared to on a laptop or the hive machines). For comparison’s sake, below are the results of some of the times taken to render some of the more complex scenes. The render time before BVH for the cow.dae took 34.21 seconds, maxplanck.dae took 314.04 seconds, CBcoil.dae took 45.71 seconds, and CBlucy.dae took 734.2 seconds. With the BVH, these render times took .057, .084, .059, and .096 seconds respectively. This massive decrease in time taken to render these scenes is due to the intersect function, as we first check bounding box intersections before checking primitive intersections, which greatly reduces the time as we can throw away the majority of nodes that the rays never intersect. We effectively reduce our runtime from linear time to logarithmic time.
+            </p>
+
+            <p>
+                Renders and time improvements can be seen directly below.
+            </p>
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/cow-bvh.png" align="middle" width="400px" />
+                            <figcaption align="middle">34.21 seconds -> .057 seconds.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/maxplanck-bvh.png" align="middle" width="400px" />
+                            <figcaption align="middle">314.04 seconds -> .084 seconds.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                </table>
+            </div>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/coil-bvh.png" align="middle" width="400px" />
+                            <figcaption align="middle">45.71 seconds -> .059 seconds.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/lucy-bvh.png" align="middle" width="400px" />
+                            <figcaption align="middle">734.2 seconds -> .096 seconds.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                </table>
+            </div>
+
+
+
+            <h2 align="middle">Part III: Direct Illumination</h2>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part3_bunny_64_32_importance_sampling.png" align="middle" width="400px" />
+                            <figcaption align="middle">Light sampling: 64 samples per pixel, 32 light rays.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part3_CBbunny_H_64_32_uniform_random.png" align="middle" width="400px" />
+                            <figcaption align="middle">Hemisphere sampling: 64 samples per pixel, 32 light rays.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                </table>
+            </div>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part3_spheres_s16_l8_importance.png" align="middle" width="400px" />
+                            <figcaption align="middle">Light sampling: 16 samples per pixel, 8 light rays.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part3_CBspheres_H_16_8_uniform_random.png" align="middle" width="400px" />
+                            <figcaption align="middle">Hemisphere sampling: 16 samples per pixel, 8 light rays.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                </table>
+            </div>
+
+
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part3_spheres_shadows_s1_l1.png" align="middle" width="400px" />
+                            <figcaption align="middle">Light sampling: 1 sample per pixel, 1 light ray.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part3_spheres_shadows_s1_l4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Light sampling: 1 sample per pixel, 4 light rays.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                    <tr>
+                        <td>
+                            <img src="images/part3_spheres_shadows_s1_l16.png" align="middle" width="400px" />
+                            <figcaption align="middle">Light sampling: 1 sample per pixel, 16 light rays.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part3_spheres_shadows_s1_l64.png" align="middle" width="400px" />
+                            <figcaption align="middle">Light sampling: 1 sample per pixel, 64 light rays.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <h2 align="middle">Part IV: Global Illumination</h2>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part4_spheres_s1024_l4_m4.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/part4_blob_s1024_l4_m4.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br>
+                    <tr>
+                        <td>
+                            <img src="images/part4_walle_s1024_l4_m4.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/part4_bench_s1024_l4_m4.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>
+                Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
+                column in that row. You might find this useful for framing and showing your result images in an organized fashion.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part4_spheres_onlydirect_s1024_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Direct illumination only.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part4_spheres_onlyglobal_s1024_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Global illumination only.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                </table>
+            </div>
+
+            <p>
+                Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
+                column in that row. You might find this useful for framing and showing your result images in an organized fashion.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part4_bunny_s1024_l4_m0.png" align="middle" width="400px" />
+                            <figcaption align="middle">1024 samples per pixel, 4 light rays, ray depth 0.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part4_bunny_s1024_l4_m1.png" align="middle" width="400px" />
+                            <figcaption align="middle">1024 samples per pixel, 4 light rays, ray depth 1.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                    <tr>
+                        <td>
+                            <img src="images/part4_bunny_s1024_l4_m2.png" align="middle" width="400px" />
+                            <figcaption align="middle">1024 samples per pixel, 4 light rays, ray depth 2.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part4_bunny_s1024_l4_m3.png" align="middle" width="400px" />
+                            <figcaption align="middle">1024 samples per pixel, 4 light rays, ray depth 3.</figcaption>
+                        </td>
+                    </tr>
+
+                </table>
+                <tr>
+                    <td align="middle">
+                        <img src="images/part4_bunny_s1024_l4_m100.png" width="400px" />
+                        <figcaption align="middle">1024 samples per pixel, 4 light rays, ray depth 100</figcaption>
+                </tr>
+            </div>
+
+            <p>
+                Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a
+                column in that row. You might find this useful for framing and showing your result images in an organized fashion.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part4_dragon_s1_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">1 sample per pixel, 4 light rays, ray depth 4.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part4_dragon_s2_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">2 samples per pixel, 4 light rays, ray depth 4.</figcaption>
+                        </td>
+                    </tr>
+                    <br>
+                    <tr>
+                        <td>
+                            <img src="images/part4_dragon_s4_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">4 samples per pixel, 4 light rays, ray depth 4.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part4_dragon_s8_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">8 samples per pixel, 4 light rays, ray depth 4.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/part4_dragon_s16_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">16 samples per pixel, 4 light rays, ray depth 4.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part4_dragon_s32_l4_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">32 samples per pixel, 4 light rays, ray depth 4.</figcaption>
+                        </td>
+                    </tr>
+
+                </table>
+                <tr>
+                    <td align="middle">
+                        <img src="images/part4_dragon_s1024_l4_m4.png" width="400px" />
+                        <figcaption align="middle">1024 samples per pixel, 4 light rays, ray depth 4</figcaption>
+                </tr>
+            </div>
+            <h2 align="middle">Part V: Adaptive Sampling</h2>
+
+            <p>After completing part 4, we now have indirect lighting with global illumination, so now we are able to further optimize the rendering with adaptive sampling to decrease the amount of noise. Using adaptive sampling, we use a high number of samples, but concentrate the samples on the more difficult parts of the image - changing the sample rate based on how quickly a pixel converges. To implement this, we simply updated the raytrace_pixel() function by creating the s1 and s2 as described in the spec, and a counter for the number of samples. If the number of samples is 1, we use our original raytrace_pixel() function, otherwise using these s1 and s2 we can check if a pixel has converged by checking if I <= maxTolerance * μ, where I = 1.96 * σ/sqrt(n), as shown in the spec. If the convergence value is less than or equal to maxTolerance * μ, we break out of the ray tracing loop. We then update the pixel value with the sum/number of samples and set the sampleCountBuffer with the number of samples.</p>
+
+            <div align="middle">
+
+                <p>Below are renders of CBbunndy.dae, with 2048 samples per pixel, 1 sample per light, 5 max ray depth.</p>
+                <tr>
+                    <td align="middle">
+                        <img src="images/5-bunny.png" width="400px" />
+                        <figcaption align="middle">Render Image of CBbunny.dae</figcaption>
+                </tr>
+            </div>
+            <div align="middle">
+
+
+                <tr>
+                    <td align="middle">
+                        <img src="images/5-bunny_rate.png" width="400px" />
+                        <figcaption align="middle">Sample rate of each pixel (blue is low, red is high).</figcaption>
+                </tr>
+            </div>
+
+            
+
+
+
+
+</body>
+
 </html>
