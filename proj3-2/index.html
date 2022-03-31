@@ -1,7 +1,237 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184 Mesh Editor</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+    <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+    <h1 align="middle">Project 3-2: Pathtracer</h1>
+    <h2 align="middle">Daniel He & Anthony Villegas</h2>
+
+
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="images/part1_CBspheres_s1024_l20_m100.png" align="middle" width="400px" />
+                    
+                </td>
+                <td>
+                    
+                    <img src="images/CBdragon8.png" align="middle" width="400px" />
+                </td>
+            </tr>
+            <br>
+            <tr>
+                <td>
+                    <img src="images/CBdragon1.png" align="middle" width="400px" />
+                   
+                </td>
+                <td>
+                    <img src="images/part1_CBspheres_s1024_l20_m1.png" align="middle" width="400px" />
+                    
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <br><br>
+
+        <div>
+
+            <h2 align="middle">Overview</h2>
+
+            <p>For this project, we added onto what we created in project 3-1, adding more features to the ray tracing to allow for implementation of more advanced materials like mirror and glass materials, rather than just a simple diffuse material. We chose to implement Part 1: Mirror and Glass Materials and Part 4: Depth of Field. For the mirror materials we had to implement ray refraction and reflection, and complete reflection for the glass material. We also implemented a virtual camera model to simulate modifying the focal length and lens radius of a real life camera.</p>
+
+            <p>
+                We did not have any particular trouble with any parts of the project
+            </p>
+
+            <h2 align="middle">Part I: Mirror and Glass Materials</h2>
+
+
+            <p>In this part of the project we implemented models for glass and mirror materials to allow for refraction and reflection. Reflection is straightforward as coordinates for intersection are given in object space with the normal pointing along the z axis. By reflecting (negating our x and y terms) about the z axis we can find the direction of the outgoing light ray. Refraction was achieved using Snell’s equations given the indices of refraction of the materials at the intersection as input. The behavior of glass materials, which both reflect and refract, is modeled using Schlick’s approximation which gives a probability for either reflection or refraction and weights terms appropriately.</p>
+
+            <p>The results for glass and mirror materials with increasingly larger light bounce depths (m) is seen below. The sphere on the left is a mirror material while the sphere on the right is a glass material.</p>
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part1_CBspheres_s1024_l20_m0.png" align="middle" width="400px" />
+                            <figcaption align="middle">m=0.</figcaption>
+
+                        </td>
+                        <td>
+                            <img src="images/part1_CBspheres_s1024_l20_m1.png" align="middle" width="400px" />
+                            <figcaption align="middle">m=1.</figcaption>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+            <p>
+                For bounce depth 0 we receive light only directly from the light source and thus the scene excluding the area light source is dark. For bounce depth 1 we see the spheres appear but they are almost completely dark. Since we have bounce depth 1 the spheres only reflect light coming directly from the light source, thus they show only the area light.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part1_CBspheres_s1024_l20_m2.png" align="middle" width="400px" />
+                            <figcaption align="middle">m=2.</figcaption>
+
+                        </td>
+                        <td>
+                            <img src="images/part1_CBspheres_s1024_l20_m3.png" align="middle" width="400px" />
+                            <figcaption align="middle">m=3.</figcaption>
+
+                        </td>
+                    </tr>
+
+
+                    <br />
+
+                </table>
+            </div>
+
+            <p>For bounce depth 2 the spheres begin to reflect light incident from non light source areas of the scene. We can notice the sphere on the right is somewhat of a black mirror. This is a result of only the reflection term being present as the bounce depth is too low for refracted rays to exit the spheres. At bounce depth 3 refracted light begins reaching the camera. The sphere is no longer dark and we can see part of the sphere’s shadow is now illuminated by refracted light. We can notice that in the reflection of the mirror sphere, the glass sphere still appears dark. We still require an additional bounce for the lit glass sphere to be reflected from the mirror back to the camera. </p>
+
+
+
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/part1_CBspheres_s1024_l20_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">m=4.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part1_CBspheres_s1024_l20_m5.png" align="middle" width="400px" />
+                            <figcaption align="middle">m=5.</figcaption>
+                        </td>
+                    </tr>
+
+                    <br />
+
+                </table>
+                <td>
+                    <img src="images/part1_CBspheres_s1024_l20_m100.png" align="middle" width="400px" />
+                    <figcaption align="middle">m=100.</figcaption>
+                </td>
+            </div>
+
+            <p>
+                At depth 4 the glass sphere no longer appears dark in the reflection of the other sphere. We also see focused light from the glass sphere appearing on the blue wall to the right. Past depth 4 the visual effects that appear are less pronounced but notably result in a brighter image.
+            </p>
+
+
+            <h2 align="middle">Part IV: Depth of Field</h2>
+
+
+            <p>A pinhole camera model is a simple camera that has a tiny aperture, and no lens - so it has infinite depth of field. It essentially takes all the light passing through a single point, which is what we implemented in project 3-1 and everything is in focus. A thin-lens camera on the other hand bends the light towards the sensor, and the light rays don’t come from a single point but mostly from the region of the focal distance. This creates the real life camera effect that only objects in the focal distance are in focus while everywhere else is blurry.</p>
+
+            <p>4 different focal distances:</p>
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon1.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.3.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBdragon2.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.5.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon3.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.7.</figcaption>
+
+                        </td>
+                        <td>
+                            <img src="images/CBdragon4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.9.</figcaption>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+            <p>We can see as we change the focal distance, the focus in the scene changes. It focuses on the head of the dragon with focal distance 3.3, and as we increase the focal distance we transition in focus on the body and then towards the tail.</p>
+
+            <p>4 different aperatures:</p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon5.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.05, Focal Distance 3.3.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBdragon6.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.15, Focal Distance 3.3.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon7.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.30, Focal Distance 3.3.</figcaption>
+
+                        </td>
+                        <td>
+                            <img src="images/CBdragon8.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.50, Focal Distance 3.3.</figcaption>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+            <p>As we increase the aperture/lens radius the depth of field gets smaller, and the area of focus gets smaller as well. The blur also gets stronger away from the focus area.</p>
+
+
+            <h4>Collaboration</h4>
+            <p>We collaborated entirely online with both work on our own time, and over Discord calls..</p>
+
+
+        </div></body>
+
 </html>
