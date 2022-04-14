@@ -37,22 +37,22 @@
         <table style="width=100%">
             <tr>
                 <td>
-                    <img src="images/part1_CBspheres_s1024_l20_m100.png" align="middle" width="400px" />
+                    <img src="images/part5 mirror cloth.png" align="middle" width="400px" />
                     
                 </td> 
                 <td>
                     
-                    <img src="images/part5 mirror sphere.png" align="middle" width="400px" />
+                    <img src="images/part5 mirror sphere.png" align="middle" width="390px" />
                 </td>
             </tr>
             <br>
             <tr>
                 <td>
-                    <img src="images/CBdragon1.png" align="middle" width="400px" />
+                    <img src="images/4-high Ks1.png" align="middle" width="400px" />
                    
                 </td>
                 <td>
-                    <img src="images/part1_CBspheres_s1024_l20_m1.png" align="middle" width="400px" />
+                    <img src="images/2-low Ks.png" align="middle" width="400px" />
                     
                 </td>
             </tr>
@@ -66,6 +66,11 @@
             <h2 align="middle">Overview</h2>
 
 
+            <p>In this project we explore physical simulation. Specifically, we created a real-time cloth simulator using a mass and spring system. With this, rather than manually animating, we can apply physical forces and constraints in various different situations using numerical integration. We also deal with collisions with other objects as well as itself - to avoid clipping into itself. And finally we implemented various shaders using GLSL - diffuse shading, Blinn-Phong shading, texture mapping, bump and displacement mapping, and mirror sharding.</p>
+
+            <p>
+                As for problems we encountered, we did not encounter too many issues, and most of the issues we ran into were related to the buildGrid() function, but they were usually simple fixes. For example, the cloth would not appear in the vertical orientation, but would show up if it was horizontal, so we have to make changes to the vertical portions of buildGrid().
+            </p>
 
             <h2 align="middle">Part I: Masses and Springs</h2>
 
@@ -133,6 +138,127 @@
                 </td>
             </div>
 
+            <h2 align="middle">Part II: Simulation Via Numerical Integration</h2>
+
+            <p>
+                In this part, we implemented the cloth simulation to be able to interact with external forces (like gravity, F=ma) and spring correction forces using Hooke’s law - Fs = Ks * (|| pa - pb || - l), where Ks is the spring constant, pa and pb are the positions of the masses, and l is the spring’s rest length.
+            </p>
+
+            <p>Once we calculate these for the force acting on the point masses at the current timestep, we use numerical integration, specifically the Verlet integration algorithm, to then calculate the change in position as well as including a damping to the simulation to help simulate loss of energy due to friction. </p>
+
+            <p>
+                We also added a constraint to make sure the cloth does not deform too much by checking that the point mass’s position is not too far away from its adjacent point mass using the rest_length * 1.1. If it is too far, we essentially correct it by having the mass’s positions be the max distance away from each other, and multiplying by the unit vector of the distance between the pointmasses.
+            </p>
+
+            <p>Effect of changing Ks: </p>
+
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/2-low Ks.png" align="middle" width="400px" />
+                            <figcaption align="middle">Low Ks, Ks = 500.</figcaption>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/2-default.png" align="middle" width="400px" />
+                            <figcaption align="middle">Default Ks, Ks = 5000.</figcaption>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/2-high Ks.png" align="middle" width="400px" />
+                            <figcaption align="middle">High Ks, Ks = 50000.</figcaption>
+                        </td>
+
+                    </tr>
+
+                    <br />
+
+                </table>
+
+            </div>
+
+            <p>
+                The Ks value refers to the spring constant, it changes how stiff the spring is. As we can see from the above images, a lower Ks value makes the cloth more flexible and wrinkly, whereas the higher Ks value makes the cloth more stiff. As Ks increases, the more stiff the material becomes.
+            </p>
+
+            <p>Effect of changing density: </p>
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/2-low density.png" align="middle" width="400px" />
+                            <figcaption align="middle">Low density, density = 1.</figcaption>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/2-default.png" align="middle" width="400px" />
+                            <figcaption align="middle">Default density, density = 15.</figcaption>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/2-high density.png" align="middle" width="400px" />
+                            <figcaption align="middle">High density, density = 1000.</figcaption>
+                        </td>
+
+                    </tr>
+
+                    <br />
+
+                </table>
+
+            </div>
+
+            <p>The density value here refers to the density of the cloth; at lower densities it looks like the cloth is lighter whereas higher densities will make the cloth heavier. There are also more ripples in the higher densities. The effect is kind of like a light t-shirt (low density) versus a heavy wool jacket (high density). </p>
+
+            <p>Effect of changing damping:</p>
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/2-low damping.png" align="middle" width="400px" />
+                            <figcaption align="middle">Low damping, damping = 0.</figcaption>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/2-default.png" align="middle" width="400px" />
+                            <figcaption align="middle">Default damping, damping = 0.2.</figcaption>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/2-high damping.png" align="middle" width="400px" />
+                            <figcaption align="middle">High damping, damping = 1.</figcaption>
+                        </td>
+
+                    </tr>
+
+                    <br />
+
+                </table>
+
+            </div>
+
+            <p>
+                Damping is the value of how much the spring oscillations decay, so a lower damping value loses less energy, and a higher damping value causes the energy to decrease more. The default parameter of damping = 0.15 has the cloth slowly fall down and swing a few times before stopping at a rest. Changing damping = 0, the cloth falls down much faster from the start of the simulation, and the oscillations never stop - and the cloth constantly swings back and forth with ripples across the whole cloth. With damping = 1, from the start of the simulation, the cloth falls down extremely slowly and doesn’t swing at all before coming to a rest.
+            </p>
 
             <h2 align="middle">Part III: Collisions With Other Objects</h2>
 
@@ -188,6 +314,153 @@
 
                 </table>
 
+            </div>
+
+            <h2 align="middle">Part IV: Handling Self-Collisions</h2>
+
+            <p>For our implementation of, rather than using the naive method of looping through all pairs of point masses and checking the distance between two points, which would take O(n^2) time, we use spatial hashing instead. We create a hash table that maps a unique float to a vector of point masses, and this creates a 3D box volume around that set of points. When handling self-collisions, we only need to check the point masses within that 3D box, and apply repulsive force if they are too close - so we essentially just need to check nearby points rather than every single point. </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/4-1.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/4-2.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/4-3.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/4-4.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+
+                </table>
+                <tr>
+                    <td align="middle">
+                        <img src="images/4-5.png" width="400px" />
+
+                    </td>
+                </tr>
+            </div>
+
+            <p>Varying the density:</p>
+
+            <p>By decreasing the density, the cloth folds over itself in larger curvy folds rather than many smaller bends.</p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/4-low density1.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/4-low density2.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br />
+
+
+                </table>
+                <tr>
+                    <td align="middle">
+                        <img src="images/4-low density3.png" width="400px" />
+                        <figcaption align="middle">Density = 1.</figcaption>
+                    </td>
+                </tr>
+            </div>
+
+            <p>
+                By increasing the density, the cloth seems to fold onto itself more, having many small folds. The added density increases the force pulling it down, causing the cloth to pull more on itself.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/4-high density1.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/4-high density2.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br />
+
+
+                </table>
+                <tr>
+                    <td align="middle">
+                        <img src="images/4-high density3.png" width="400px" />
+                        <figcaption align="middle">Density = 500.</figcaption>
+                    </td>
+                </tr>
+            </div>
+
+            <p>Varying Ks:</p>
+
+            <p>By decreasing Ks, the cloth is much more springier and it bounces a lot.</p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/4-low Ks1.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/4-low Ks2.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br />
+
+
+                </table>
+                <tr>
+                    <td align="middle">
+                        <img src="images/4-low Ks3.png" width="400px" />
+                        <figcaption align="middle">Ks = 500.</figcaption>
+                    </td>
+                </tr>
+            </div>
+
+            <p>By increasing Ks, the cloth is much stiffer, and also less likely to fold into itself.</p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/4-high Ks1.png" align="middle" width="400px" />
+
+                        </td>
+                        <td>
+                            <img src="images/4-high Ks2.png" align="middle" width="400px" />
+
+                        </td>
+                    </tr>
+                    <br />
+
+
+                </table>
+                <tr>
+                    <td align="middle">
+                        <img src="images/4-high Ks3.png" width="400px" />
+                        <figcaption align="middle">Ks = 50000.</figcaption>
+                    </td>
+                </tr>
             </div>
 
 
@@ -251,36 +524,44 @@
 
             <p>We also implemented bump mapping where we modify the normals of the object to give the appearance of some sort of physical quality such as bumpiness, for example. This was done by reading from a texture which encoded a height map. This along with an appropriate change of basis to make calculations simpler allowed us to achieve the effect. There is also displacement mapping where in addition to changing the normals we modify the position of the vertices. As one might suspect, the work to do this is done within a vertex shader, where we again sample from the texture and now bump up the vertex position values based on the values stored by the textures.</p>
 
+
+
             <div align="middle">
                 <table style="width=100%">
+
                     <tr>
                         <td>
                             <img src="images/part5 bump sphere.png" align="middle" width="400px" />
                             <figcaption align="middle">Bump sphere.</figcaption>
                         </td>
+
+                    </tr>
+                    <tr>
                         <td>
                             <img src="images/part5 bump cloth.png" align="middle" width="400px" />
                             <figcaption align="middle">Bumpy cloth.</figcaption>
                         </td>
+
                     </tr>
-                    <br />
                     <tr>
                         <td>
-
-
                             <img src="images/part5 displacement sphere.png" align="middle" width="400px" />
                             <figcaption align="middle">Displacement sphere.</figcaption>
                         </td>
+
+                    </tr>
+                    <tr>
                         <td>
                             <img src="images/part5 displacement cloth.png" align="middle" width="400px" />
                             <figcaption align="middle">Displacement cloth.</figcaption>
                         </td>
+
                     </tr>
 
+                    <br />
 
                 </table>
-                <tr>
-                </tr>
+
             </div>
 
             <p>The two techniques produce very similar results. When looking at the sphere alone we see there isn’t much difference on the face of the sphere but the effect is clear on the edges, where we see the sphere protrude out for displacement mapping. Also do note, this isn’t a one for one comparison as the parameters for the cloth are different for the bump and displacement map. Moreso it is a demonstration of the capabilities of each shader. If we leave the displacement map with default values it looks very incorrect as can be seen in the provided images. </p>
@@ -307,134 +588,67 @@
 
             <div align="middle">
                 <table style="width=100%">
+
                     <tr>
                         <td>
                             <img src="images/part5 bumpy cloth 2.png" align="middle" width="400px" />
                             <figcaption align="middle">Bump -o 16 -a 16.</figcaption>
                         </td>
+
+                    </tr>
+                    <tr>
                         <td>
                             <img src="images/part5 displacment o16 corrected.png" align="middle" width="400px" />
                             <figcaption align="middle">Displacement -o 16 -a 16.</figcaption>
                         </td>
+
                     </tr>
-                    <br />
                     <tr>
                         <td>
-
-
                             <img src="images/part5 bump o128.png" align="middle" width="400px" />
                             <figcaption align="middle">Bump -o 128 -a 128.</figcaption>
                         </td>
+
+                    </tr>
+                    <tr>
                         <td>
                             <img src="images/part5 displacement 0128.png" align="middle" width="400px" />
                             <figcaption align="middle">Displacement -o 128 -a 128.</figcaption>
                         </td>
-                    </tr>
 
-
-                </table>
-                <tr>
-                </tr>
-            </div>
-
-            <p>Finally we implement environment mapped reflections. Given the vertex position and the camera position we find the outgoing eye ray, reflect across the normal, and find the incoming ray which we use to sample from a cubemap texture. This gives us the reflective materials seen below.</p>
-
-            <div align="middle">
-                <table style="width=100%">
-
-                    <tr>
-                        <td>
-                            <img src="images/part5 mirror cloth.png" align="middle" width="400px" />
-                            <figcaption align="middle">Mirror cloth.</figcaption>
-                        </td>
-                        
                     </tr>
 
                     <br />
 
                 </table>
-                <td>
-                    <img src="images/part5 mirror sphere.png" align="middle" width="400px" />
-                    <figcaption align="middle">Mirror sphere.</figcaption>
-                </td>
-            </div>
 
-            <h2 align="middle">Part IV: Depth of Field</h2>
+       </div>
+
+                <p>Finally we implement environment mapped reflections. Given the vertex position and the camera position we find the outgoing eye ray, reflect across the normal, and find the incoming ray which we use to sample from a cubemap texture. This gives us the reflective materials seen below.</p>
+
+                <div align="middle">
+                    <table style="width=100%">
+
+                        <tr>
+                            <td>
+                                <img src="images/part5 mirror cloth.png" align="middle" width="400px" />
+                                <figcaption align="middle">Mirror cloth.</figcaption>
+                            </td>
+
+                        </tr>
+
+                        <br />
+
+                    </table>
+                    <td>
+                        <img src="images/part5 mirror sphere.png" align="middle" width="400px" />
+                        <figcaption align="middle">Mirror sphere.</figcaption>
+                    </td>
+                </div>
 
 
-            <p>A pinhole camera model is a simple camera that has a tiny aperture, and no lens - so it has infinite depth of field. It essentially takes all the light passing through a single point, which is what we implemented in project 3-1 and everything is in focus. A thin-lens camera on the other hand bends the light towards the sensor, and the light rays don’t come from a single point but mostly from the region of the focal distance. This creates the real life camera effect that only objects in the focal distance are in focus while everywhere else is blurry.</p>
-
-            <p>4 different focal distances:</p>
-            <div align="middle">
-                <table style="width=100%">
-                    <tr>
-                        <td>
-                            <img src="images/CBdragon1.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.3.</figcaption>
-                        </td>
-                        <td>
-                            <img src="images/CBdragon2.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.5.</figcaption>
-                        </td>
-                    </tr>
-                    <br />
-                    <tr>
-                        <td>
-                            <img src="images/CBdragon3.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.7.</figcaption>
-
-                        </td>
-                        <td>
-                            <img src="images/CBdragon4.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.9.</figcaption>
-
-                        </td>
-                    </tr>
-
-                </table>
 
             </div>
-
-            <p>We can see as we change the focal distance, the focus in the scene changes. It focuses on the head of the dragon with focal distance 3.3, and as we increase the focal distance we transition in focus on the body and then towards the tail.</p>
-
-            <p>4 different aperatures:</p>
-
-            <div align="middle">
-                <table style="width=100%">
-                    <tr>
-                        <td>
-                            <img src="images/CBdragon5.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.05, Focal Distance 3.3.</figcaption>
-                        </td>
-                        <td>
-                            <img src="images/CBdragon6.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.15, Focal Distance 3.3.</figcaption>
-                        </td>
-                    </tr>
-                    <br />
-                    <tr>
-                        <td>
-                            <img src="images/CBdragon7.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.30, Focal Distance 3.3.</figcaption>
-
-                        </td>
-                        <td>
-                            <img src="images/CBdragon8.png" align="middle" width="400px" />
-                            <figcaption align="middle">Aperature 0.50, Focal Distance 3.3.</figcaption>
-
-                        </td>
-                    </tr>
-
-                </table>
-
-            </div>
-            <p>As we increase the aperture/lens radius the depth of field gets smaller, and the area of focus gets smaller as well. The blur also gets stronger away from the focus area.</p>
-
-
-            <h4>Collaboration</h4>
-            <p>We collaborated entirely online with both work on our own time, and over Discord calls..</p>
-
-
         </div></body>
 
 </html>
