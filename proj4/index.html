@@ -1,7 +1,440 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 4 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184 Cloth Sim</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+    <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+    <h1 align="middle">Project 4: Cloth Simulation</h1>
+    <h2 align="middle">Daniel He & Anthony Villegas</h2>
+
+
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="images/part1_CBspheres_s1024_l20_m100.png" align="middle" width="400px" />
+                    
+                </td> 
+                <td>
+                    
+                    <img src="images/part5 mirror sphere.png" align="middle" width="400px" />
+                </td>
+            </tr>
+            <br>
+            <tr>
+                <td>
+                    <img src="images/CBdragon1.png" align="middle" width="400px" />
+                   
+                </td>
+                <td>
+                    <img src="images/part1_CBspheres_s1024_l20_m1.png" align="middle" width="400px" />
+                    
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <br><br>
+
+        <div>
+
+            <h2 align="middle">Overview</h2>
+
+
+
+            <h2 align="middle">Part I: Masses and Springs</h2>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+
+                        <td>
+                            <img src="images/part1 mesh2.png" align="middle" width="400px" />
+
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+
+            <p>In this part we construct a grid of point masses and connecting springs which will model the cloth. This is done within the buildGrid() function of the Cloth class</p>
+
+
+            <p>First we create a grid of masses which we’ll later add springs to. The class variables width and height tell us the desired physical size of our cloth while num_height_points and num_width_points tells us how many point masses should be located along each axis. In a nested for loop we create this 2D grid of point masses, spaced apart width / (num_width_points -1) along the x axis. If we want our cloth to be horizontally oriented then we let the y position be a constant 1.0 and masses along the z axis be spaced apart by a distance of (height / num_height_points - 1). If we want to be vertically oriented then the y positions are spaced apart by  (height / num_height_points - 1) while the z location is a random offset between -1/1000 and 1/1000. These point masses are added to a vector in a row major order.</p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part1 mesh.png" align="middle" width="400px" />
+
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </div>
+
+            <p>Next we add springs which impose structural, shearing, and bending constraints. We loop through the vector of masses and add the corresponding springs for each of these constraints if the edge cases are satisfied. Below we can see what the constructed mesh looks like with only the shearing constraint springs and no shearing springs.</p>
+
+
+
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/part1 no shearing.png" align="middle" width="400px" />
+                            <figcaption align="middle">No shearing.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part1 only shearing.png" align="middle" width="380px" />
+                            <figcaption align="middle">Only shearing.</figcaption>
+                        </td>
+                    </tr>
+
+                    <br />
+
+                </table>
+                <td>
+                    <img src="images/part1 all constraints.png" align="middle" width="400px" />
+                    <figcaption align="middle">All constraints.</figcaption>
+                </td>
+            </div>
+
+
+            <h2 align="middle">Part III: Collisions With Other Objects</h2>
+
+
+
+            <p>In this part we implement functionality for the cloth to collide with spheres and planes. This is done within the sphere’s and plane’s method which tests whether a given point mass has intersected the geometry and if so updates its position to be outside of the object.</p>
+
+            <p>For our sphere we know we’ve collided if the distance between the origin of the sphere and the point mass is less than the sphere’s radius. If this is true then we find the point of intersection from the path of the point mass to the surface of the sphere and update the current position to be the last position plus a vector pointing to the point of intersection scaled by a friction term.</p>
+
+            <p>
+                Below we can see examples of the cloth resting on the sphere for varying spring constant values. The general trend is the lower the spring constant the ‘droopier’ the cloth is and tends to hang lower on the sphere. Meanwhile the higher spring constant results in a stiff cloth which maintains a more spread out shape when wrapped around the sphere.
+            </p>
+
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/part3 ks500.png" align="middle" width="400px" />
+                            <figcaption align="middle">ks = 500.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part3 ks5000.png" align="middle" width="400px" />
+                            <figcaption align="middle">ks = 5000.</figcaption>
+                        </td>
+                    </tr>
+
+                    <br />
+
+                </table>
+                <td>
+                    <img src="images/part3 ks50000.png" align="middle" width="400px" />
+                    <figcaption align="middle">ks = 50000.</figcaption>
+                </td>
+            </div>
+
+            <p>For our plane we first find the point of intersection. If this point is closer to the last position of our point mass then our current point then we know we must have crossed over the plane. We similarly find a correction vector which takes us back over to the correct side of the plane plus a small surface offset and update our current position by this vector scaled by a friction term. We see an example of our cloth resting on a plane below.</p>
+
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/part3 cloth on plane.png" align="middle" width="400px" />
+                            <figcaption align="middle">Cloth resting on plane.</figcaption>
+                        </td>
+
+                    </tr>
+
+                    <br />
+
+                </table>
+
+            </div>
+
+
+            <h2 align="middle">Part V: Shaders</h2>
+
+            <p>Shaders are programs that run in parallel on the GPU and allow us to perform some function. In our context they take as input some properties of our scene and output a pixel which will be rendered on our screen. This is quite general but using the input properties such as vertex position and light source positions we can implement lighting effects such as diffuse shading. In this project we take advantage of vertex shaders, which modify properties of vertices then feed this information to fragment shaders which output the actual pixel color to be displayed.  Using these we implement several shading effects.</p>
+
+            <p>One of the shaders developed was for Blinn-Phong shading. Blinn-Phong is a model for lighting an object. It accounts for the bright specular components which make up direct reflections, diffuse reflection which is more indirect and goes equally in all directions, and the ambient light which results from reflection of light throughout the environment. This is of course a model and we don’t simulate light in any way but instead use approximations based on vectors at a given vertex. The specular term features our light intensity divided by the squared distance from the light source scaled by the power of a dot product between the normal at the vertex on our object and the bisector between the normal and vector pointing towards the light source. By changing the power of the dot product we can change the appearance of the specular component. The diffuse component similarly has the light intensity divided by a squared distance term, but this time is multiplied by a Lambertian dot product between the normal and the vector towards the light, intuitively giving us the proportion of light which directly hits the object. Finally the ambient term is an arbitrary light intensity which we add uniformly to all points to make for light not accounted for in our model. </p>
+
+            <p>Below we can see each of these terms in isolation and imagine how their sum produces the image with all terms present.</p>
+
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part5 ambient.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ambient light.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5 specular.png" align="middle" width="350px" />
+                            <figcaption align="middle">Specular light.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/part5 diffuse.png" align="middle" width="400px" />
+                            <figcaption align="middle">Diffuse light.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5 phong all.png" align="middle" width="400px" />
+                            <figcaption align="middle">Blinn-Phong, all terms.</figcaption>
+                        </td>
+                    </tr>
+
+
+                </table>
+                <tr>
+                </tr>
+            </div>
+
+            <p>We can use shaders to put textures on our cloth and spheres. In the following example we have a Kermit the frog shader on cloth draped over the sphere.</p>
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part5 texture.png" align="middle" width="400px" />
+
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </div>
+
+            <p>We also implemented bump mapping where we modify the normals of the object to give the appearance of some sort of physical quality such as bumpiness, for example. This was done by reading from a texture which encoded a height map. This along with an appropriate change of basis to make calculations simpler allowed us to achieve the effect. There is also displacement mapping where in addition to changing the normals we modify the position of the vertices. As one might suspect, the work to do this is done within a vertex shader, where we again sample from the texture and now bump up the vertex position values based on the values stored by the textures.</p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part5 bump sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">Bump sphere.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5 bump cloth.png" align="middle" width="400px" />
+                            <figcaption align="middle">Bumpy cloth.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+
+
+                            <img src="images/part5 displacement sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">Displacement sphere.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5 displacement cloth.png" align="middle" width="400px" />
+                            <figcaption align="middle">Displacement cloth.</figcaption>
+                        </td>
+                    </tr>
+
+
+                </table>
+                <tr>
+                </tr>
+            </div>
+
+            <p>The two techniques produce very similar results. When looking at the sphere alone we see there isn’t much difference on the face of the sphere but the effect is clear on the edges, where we see the sphere protrude out for displacement mapping. Also do note, this isn’t a one for one comparison as the parameters for the cloth are different for the bump and displacement map. Moreso it is a demonstration of the capabilities of each shader. If we leave the displacement map with default values it looks very incorrect as can be seen in the provided images. </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part5 displacement o16.png" align="middle" width="350px" />
+
+                        </td>
+
+                    </tr>
+                    <br />
+
+
+
+                </table>
+                <tr>
+                </tr>
+            </div>
+
+            <p>When looking at the cloth draped over the sphere, again, they look similar in that the texture along them appears the same but the displacement mapped sphere is more convincing in the sense that physical qualities that we expect from the texture are complemented by the changing geometry in displacement mapping. It is quite strange seeing the stone-like surface for bump mapping but having a completely smooth surface. This is however only made apparent by comparison and in some scenarios where we aren’t focused on the object, bump mapping might be sufficient. </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part5 bumpy cloth 2.png" align="middle" width="400px" />
+                            <figcaption align="middle">Bump -o 16 -a 16.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5 displacment o16 corrected.png" align="middle" width="400px" />
+                            <figcaption align="middle">Displacement -o 16 -a 16.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+
+
+                            <img src="images/part5 bump o128.png" align="middle" width="400px" />
+                            <figcaption align="middle">Bump -o 128 -a 128.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5 displacement 0128.png" align="middle" width="400px" />
+                            <figcaption align="middle">Displacement -o 128 -a 128.</figcaption>
+                        </td>
+                    </tr>
+
+
+                </table>
+                <tr>
+                </tr>
+            </div>
+
+            <p>Finally we implement environment mapped reflections. Given the vertex position and the camera position we find the outgoing eye ray, reflect across the normal, and find the incoming ray which we use to sample from a cubemap texture. This gives us the reflective materials seen below.</p>
+
+            <div align="middle">
+                <table style="width=100%">
+
+                    <tr>
+                        <td>
+                            <img src="images/part5 mirror cloth.png" align="middle" width="400px" />
+                            <figcaption align="middle">Mirror cloth.</figcaption>
+                        </td>
+                        
+                    </tr>
+
+                    <br />
+
+                </table>
+                <td>
+                    <img src="images/part5 mirror sphere.png" align="middle" width="400px" />
+                    <figcaption align="middle">Mirror sphere.</figcaption>
+                </td>
+            </div>
+
+            <h2 align="middle">Part IV: Depth of Field</h2>
+
+
+            <p>A pinhole camera model is a simple camera that has a tiny aperture, and no lens - so it has infinite depth of field. It essentially takes all the light passing through a single point, which is what we implemented in project 3-1 and everything is in focus. A thin-lens camera on the other hand bends the light towards the sensor, and the light rays don’t come from a single point but mostly from the region of the focal distance. This creates the real life camera effect that only objects in the focal distance are in focus while everywhere else is blurry.</p>
+
+            <p>4 different focal distances:</p>
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon1.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.3.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBdragon2.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.5.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon3.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.7.</figcaption>
+
+                        </td>
+                        <td>
+                            <img src="images/CBdragon4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.2, Focal Distance 3.9.</figcaption>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+            <p>We can see as we change the focal distance, the focus in the scene changes. It focuses on the head of the dragon with focal distance 3.3, and as we increase the focal distance we transition in focus on the body and then towards the tail.</p>
+
+            <p>4 different aperatures:</p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon5.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.05, Focal Distance 3.3.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBdragon6.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.15, Focal Distance 3.3.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBdragon7.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.30, Focal Distance 3.3.</figcaption>
+
+                        </td>
+                        <td>
+                            <img src="images/CBdragon8.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperature 0.50, Focal Distance 3.3.</figcaption>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+            <p>As we increase the aperture/lens radius the depth of field gets smaller, and the area of focus gets smaller as well. The blur also gets stronger away from the focus area.</p>
+
+
+            <h4>Collaboration</h4>
+            <p>We collaborated entirely online with both work on our own time, and over Discord calls..</p>
+
+
+        </div></body>
+
 </html>
